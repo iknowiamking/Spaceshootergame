@@ -1,6 +1,7 @@
 import pygame
 from settings import Settings
 from ship import Ship
+from ufo import Ufo
 import game_functions as gf
 from pygame.sprite import Group
 
@@ -17,6 +18,9 @@ def run_game():
     #Ship object
     ship = Ship(screen)
     bullets = Group()
+    ufos = Group()
+    ufo = Ufo(ai_settings,screen)
+    #gf.create_fleet(ai_settings,screen,ufos)
 
     clock = pygame.time.Clock()
 
@@ -29,10 +33,10 @@ def run_game():
         # pygame.QUIT event means the user clicked X to close your window
         gf.check_events(ai_settings, screen, ship, bullets)
         ship.update()
-        bullets.update()
+        gf.update_bullets(bullets)
 
         # fill the screen with a color to wipe away anything from last frame
-        gf.update_screen(ai_settings,screen,ship,bullets)
+        gf.update_screen(ai_settings,screen,ship,ufo,bullets)
 
 
         """pygame.draw.circle(screen, "red", player_pos, 40)
