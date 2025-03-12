@@ -19,8 +19,7 @@ def run_game():
     ship = Ship(screen)
     bullets = Group()
     ufos = Group()
-    ufo = Ufo(ai_settings,screen)
-    #gf.create_fleet(ai_settings,screen,ufos)
+    gf.create_fleet(ai_settings,screen,ship,ufos)
 
     clock = pygame.time.Clock()
 
@@ -34,24 +33,9 @@ def run_game():
         gf.check_events(ai_settings, screen, ship, bullets)
         ship.update()
         gf.update_bullets(bullets)
-
+        gf.update_ufos(ai_settings,ufos)
         # fill the screen with a color to wipe away anything from last frame
-        gf.update_screen(ai_settings,screen,ship,ufo,bullets)
-
-
-        """pygame.draw.circle(screen, "red", player_pos, 40)
-
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
-            player_pos.y -= 300 * dt
-        if keys[pygame.K_s]:
-            player_pos.y += 300 * dt
-        if keys[pygame.K_a]:
-            player_pos.x -= 300 * dt
-        if keys[pygame.K_d]:
-            player_pos.x += 300 * dt"""
-
-
+        gf.update_screen(ai_settings,screen,ship,ufos,bullets)
         pygame.display.flip()
         
         # limits FPS to 60
