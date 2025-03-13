@@ -4,7 +4,7 @@ import pygame
 from bullet import Bullet
 from ufo import Ufo
 
-def check_events(ai_settings, screen,stats, play_button,ship,ufos,bullets):
+def check_events(ai_settings, screen,stats,sb, play_button,ship,ufos,bullets):
     """Respond to key movements"""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -34,7 +34,7 @@ def check_events(ai_settings, screen,stats, play_button,ship,ufos,bullets):
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            check_play_button(ai_settings, screen,stats, play_button,ship,ufos,bullets, mouse_x, mouse_y)
+            check_play_button(ai_settings, screen,stats,sb, play_button,ship,ufos,bullets, mouse_x, mouse_y)
         
 
 def update_screen(ai_settings , screen ,stats, sb,ship, ufos, bullets,play_button):
@@ -69,10 +69,14 @@ def update_bullets(ai_settings,screen,stats,sb,ship,ufos,bullets):
         for ufos in collisions.values():
             stats.score += ai_settings.ufo_points * len(ufos)
         sb.prep_score()
+        check_high_score(stats, sb)
     if len(ufos) == 0:
     # Destroy existing bullets and create new fleet.
+
         bullets.empty()
         ai_settings.increase_speed()
+        stats.level += 1
+        sb.prep_level()
         create_fleet(ai_settings, screen, ship, ufos)
 
 
@@ -94,21 +98,24 @@ def create_fleet(ai_settings,screen,ship,ufos):
     # Create an ufo and place it in the row.
             ufo = Ufo(ai_settings, screen)
             ufo.x = ufo_width + 2 * ufo_width * ufo_col_number
-            y = ufo_height + 2 * ufo_height * ufo_row_number
+            if ufo_row_number == 0:
+                y = ufo_height + 2 * ufo_height * ufo_row_number
+            else:
+                y = ufo_height + 2 * ufo_height * ufo_row_number
             ufo.rect.x = ufo.x
             ufo.rect.y = y
             ufos.add(ufo)
 
-def update_ufos(ai_settings,stats,screen,ship,ufos,bullets): 
+def update_ufos(ai_settings,stats,sb,screen,ship,ufos,bullets): 
     """Update the postions of all ufos in the fleet."""
     check_fleet_edges(ai_settings,ufos)
 
     ufos.update()
 
     if pygame.sprite.spritecollideany(ship, ufos):
-        ship_hit(ai_settings, stats, screen, ship, ufos, bullets)
+        ship_hit(ai_settings, stats,sb, screen, ship, ufos, bullets)
     
-    check_ufos_bottom(ai_settings, stats, screen, ship, ufos, bullets)
+    check_ufos_bottom(ai_settings, stats,sb, screen, ship, ufos, bullets)
 
 
 def check_fleet_edges(ai_settings, ufos):
@@ -127,12 +134,12 @@ def change_fleet_direction(ai_settings, ufos):
 
 
 
-def ship_hit(ai_settings, stats, screen, ship, ufos, bullets):
+def ship_hit(ai_settings, stats,sb, screen, ship, ufos, bullets):
     """Respond to ship being hit by ufo."""
     # Decrement ships_left.
     if stats.ships_left > 0:
         stats.ships_left -= 1
-
+        sb.prep_ships()
         # Empty the list of ufos and bullets.
         ufos.empty()
         bullets.empty()
@@ -144,19 +151,20 @@ def ship_hit(ai_settings, stats, screen, ship, ufos, bullets):
         # Pause.
         sleep(0.5)
     else:
+
         pygame.mouse.set_visible(True)
         stats.game_active = False
 
-def check_ufos_bottom(ai_settings, stats, screen, ship, ufos, bullets):
+def check_ufos_bottom(ai_settings, stats,sb, screen, ship, ufos, bullets):
     """Check if any ufos have reached the bottom of the screen."""
     screen_rect = screen.get_rect()
     for ufo in ufos.sprites():
         if ufo.rect.bottom >= screen_rect.bottom:
             # Treat this the same as if the ship got hit.
-            ship_hit(ai_settings, stats, screen, ship, ufos, bullets)
+            ship_hit(ai_settings, stats,sb, screen, ship, ufos, bullets)
             break
 
-def check_play_button(ai_settings, screen,stats, play_button,ship,ufos,bullets,mouse_x, mouse_y):
+def check_play_button(ai_settings, screen,stats,sb, play_button,ship,ufos,bullets,mouse_x, mouse_y):
     """Start a new game when the player clicks Play."""
     if play_button.rect.collidepoint(mouse_x, mouse_y) and not stats.game_active:
         # Reset the game statistics.
@@ -165,7 +173,11 @@ def check_play_button(ai_settings, screen,stats, play_button,ship,ufos,bullets,m
         stats.reset_stats()
         stats.game_active = True
         
-
+        # Reset the scoreboard images.
+        sb.prep_score()
+        sb.prep_high_score()
+        sb.prep_level()
+        sb.prep_ships()
 
         # Empty the list of aliens and bullets.
         ufos.empty()
@@ -174,3 +186,10 @@ def check_play_button(ai_settings, screen,stats, play_button,ship,ufos,bullets,m
         # Create a new fleet and center the ship.
         create_fleet(ai_settings, screen, ship, ufos)
         ship.center_ship()
+
+
+def check_high_score(stats,sb):
+    """Checking for new highscore"""
+    if stats.score >  stats.high_score:
+        stats.high_score = stats.score
+        sb.prep_high_score()

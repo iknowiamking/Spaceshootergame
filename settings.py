@@ -38,4 +38,3 @@ class Settings:
         self.bullet_speed_factor *= self.speedup_scale
         self.ufo_speed_factor *= self.speedup_scale
         self.ufo_points = int(self.score_scale * self.ufo_points)
-        print(self.ufo_points)
