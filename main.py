@@ -1,3 +1,4 @@
+import asyncio
 import pygame
 from settings import Settings
 from ship import Ship
@@ -9,7 +10,7 @@ from button import Button
 from score import Score
 
 # pygame setup
-def run_game():
+async def run_game():
 
     #Settings object
     ai_settings = Settings()
@@ -41,6 +42,6 @@ def run_game():
 
         gf.update_screen(ai_settings,screen,stats,sb,ship,ufos,bullets,play_button)
         pygame.display.flip()
+        await asyncio.sleep(0)
 
-
-run_game()
+asyncio.run(run_game())
